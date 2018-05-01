@@ -5,13 +5,14 @@
 
 #include "bwted.h"
 
-std::vector< std::vector<char> > transpose(std::vector< std::vector<char> >& vect)
-{
- std::vector< std::vector<char> > transposed(vect[0].size(), std::vector<char>());
- for (size_t i = 0; i < vect.size(); ++i)
-  for (size_t j = 0; j < vect[0].size(); ++j)
-    transposed[j].push_back(vect[i][j]);
- return transposed;
+matrix_t transpose(matrix_t &vec) {
+    matrix_t transposed(vec[0].size(), std::vector<char>());
+
+    for (size_t i = 0; i < vec.size(); i++)
+        for (size_t j = 0; j < vec[0].size(); j++)
+            transposed[j].push_back(vec[i][j]);
+
+    return transposed;
 }
 
 /* 
@@ -32,7 +33,7 @@ int BWTDecoding(tBWTED *ahed, std::fstream &inputFile, std::fstream &outputFile)
     std::vector<char> column_sorted(str.begin(), str.end());
     std::stable_sort(column_sorted.begin(), column_sorted.end());
 
-    std::vector<std::vector<char>> table;
+    matrix_t table;
     table.resize(str.size(), std::vector<char>(str.size()));
 
     int i = str.size() - 1;
@@ -64,6 +65,9 @@ int BWTDecoding(tBWTED *ahed, std::fstream &inputFile, std::fstream &outputFile)
             break;
         }
     }
+    // delete STX, ETX
+    out = out.substr(1, out.size() - 2);
+
     std::cout << "Decoded" << std::endl;
     std::cout << out << std::endl;
     for (auto i : out) {
@@ -90,9 +94,10 @@ int BWTEncoding(tBWTED *bwted, std::fstream &inputFile, std::fstream &outputFile
     
     // add start and end of transaction symbols to string
     str = STX + str + ETX;
-    std::cout << "String w/ STX, ETX: " << str << std::endl;
+    // std::cout << "String w/ STX, ETX: " << str << std::endl;
 
 
+    std::cout << "Cyclic shifts" << std::endl;
     // create cyclic shifts
     std::string shifted;
     for (size_t i = 0; i < str.size(); i++) {
@@ -101,20 +106,20 @@ int BWTEncoding(tBWTED *bwted, std::fstream &inputFile, std::fstream &outputFile
     }
 
     std::cout << "Unsorted" << std::endl;
-    for(auto i : cyclic) {
-        std::cout << i << std::endl;
-    }
-    std::cout << std::endl;
+    // for(auto i : cyclic) {
+    //     std::cout << i << std::endl;
+    // }
+    // std::cout << std::endl;
 
 
     // sort cyclic shifts lexicographicaly
     std::sort(cyclic.begin(), cyclic.end());
 
     std::cout << "Sorted" << std::endl;
-    for(auto i : cyclic) {
-        std::cout << i << std::endl;
-    }
-    std::cout << std::endl;
+    // for(auto i : cyclic) {
+    //     std::cout << i << std::endl;
+    // }
+    // std::cout << std::endl;
 
     // get last column
     std::string out = "";
@@ -126,11 +131,11 @@ int BWTEncoding(tBWTED *bwted, std::fstream &inputFile, std::fstream &outputFile
     outputFile << out;
 
     std::cout << "Encoded" << std::endl;
-    std::cout << out << std::endl;
-    for (auto i : out) {
-        std::cout << std::hex << int(i) << " ";
-    }
-    std::cout << std::dec << std::endl;
+    // std::cout << out << std::endl;
+    // for (auto i : out) {
+    //     std::cout << std::hex << int(i) << " ";
+    // }
+    // std::cout << std::dec << std::endl;
 
     return 0;
 }

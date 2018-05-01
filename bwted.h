@@ -20,6 +20,9 @@
 // #define STX '^'  // start of transaction
 // #define ETX '|'  // end of transaction
 
+using matrix_t = std::vector< std::vector<char> >;
+
+
 typedef struct {
     int64_t uncodedSize;
     int64_t codedSize;
