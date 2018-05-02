@@ -15,10 +15,11 @@ int MTFEncoding(std::fstream &input, std::vector<size_t> &mtf_enc) {
     size_t rank = 0;
 
     for(char& c : str) {
-        std::cout << c << std::endl;
+        // get rank of char
         rank = distance(alphabet.begin(), find(alphabet.begin(), alphabet.end(), c));
         mtf_enc.push_back(rank);
 
+        // update alphabet
         alphabet.remove(c);
         alphabet.push_front(c);
     }
@@ -33,7 +34,7 @@ int MTFDecoding(std::vector<size_t> &mtf_enc, std::string &mtf_dec) {
         alphabet.push_front(char(i));
 
     for(auto i : mtf_enc) {
-        // char e = alphabet[i];
+        // iterator to given char in alphabet
         auto it = std::next(alphabet.begin(), i);
         char e = *it;
         mtf_dec += e;
