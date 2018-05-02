@@ -6,21 +6,25 @@ int RLEEncoding(std::string &str_in, std::string &str_out) {
     char sc;
 
     // algorithm from KKO
-    for (int i = 0; i <= str_in.size(); i++) {
+    char c;
+    // need +1 iteration to write last sequence
+    for (size_t i = 0; i <= str_in.size(); i++) {
         // get next char
-        char c = str_in[i];
+        if (i < str_in.size())
+            c = str_in[i];
         c_cnt++;
         if (c_cnt == 1) {
             sc = c;
             continue;
         }
-        if (sc == c) {
+        // don't compare on last iteration
+        if (sc == c && i != str_in.size()) {
             r_cnt++;
             continue;
         }
         if (r_cnt < 4) {
             // write r_cnt times same character
-            for (int i = 0; i < r_cnt; i++) {
+            for (size_t i = 0; i < r_cnt; i++) {
                 str_out += sc;
             }
             c_cnt = 1;
@@ -47,6 +51,7 @@ int RLEDecoding(std::string &str_in, std::string &str_out) {
     int flag = 0; // compress flag
     std::string digit = "";
     size_t n;
+
     for(auto& c : str_in) {
         if (flag == 0) {
             // if format is compressed
@@ -63,7 +68,7 @@ int RLEDecoding(std::string &str_in, std::string &str_out) {
         // print character n times
         else {
             n = std::stoul(digit);
-            for (int i = 0; i < n; i++)
+            for (size_t i = 0; i < n; i++)
                 str_out += c;
             flag = 0;
             digit = "";
