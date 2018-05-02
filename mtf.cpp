@@ -1,23 +1,12 @@
 #include "mtf.h"
 
-
-
-int MTFEncoding(std::fstream &input, std::vector<size_t> &mtf_enc) {
-    std::list<char> alphabet;
-    // initialize alphabet
-    for (int i = 0; i < 255; ++i)
-        alphabet.push_front(char(i));
-
-    // input to string
-    std::string str((std::istreambuf_iterator<char>(input)),
-                     std::istreambuf_iterator<char>());
-
-    size_t rank = 0;
+int MTFEncoding(std::string &str, std::string &mtf_enc, std::list<char> alphabet) {
+    uint8_t rank = 0;
 
     for(char& c : str) {
         // get rank of char
         rank = distance(alphabet.begin(), find(alphabet.begin(), alphabet.end(), c));
-        mtf_enc.push_back(rank);
+        mtf_enc += rank;
 
         // update alphabet
         alphabet.remove(c);
@@ -27,16 +16,13 @@ int MTFEncoding(std::fstream &input, std::vector<size_t> &mtf_enc) {
     return 0;
 }
 
-int MTFDecoding(std::vector<size_t> &mtf_enc, std::string &mtf_dec) {
-    std::list<char> alphabet;
-    // initialize alphabet
-    for (int i = 0; i < 255; ++i)
-        alphabet.push_front(char(i));
-
-    for(auto i : mtf_enc) {
+int MTFDecoding(std::string &mtf_enc, std::string &mtf_dec, std::list<char> alphabet) {
+    for(auto& i : mtf_enc) {
         // iterator to given char in alphabet
         auto it = std::next(alphabet.begin(), i);
+        // char from iterator
         char e = *it;
+        // write char to output
         mtf_dec += e;
 
         // update alphabet
