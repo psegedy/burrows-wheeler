@@ -20,71 +20,78 @@ int main(int argc, char const **argv) {
     fstream ofs2("test_out2.txt", ostream::out);
     tBWTED bwted;
 
-    // BWTEncoding(&bwted, test30k, ofs);
+    std::list<char> alphabet;
+    // initialize alphabet
+    for (int i = 0; i < 255; ++i)
+        alphabet.push_front(char(i));
+
+    BWTEncoding(&bwted, banana, ofs);
 
 
 
-    // ofs.seekg (0, ofs.beg);
+    ofs.seekg (0, ofs.beg);
 
-    // BWTDecoding(&bwted, ofs, ofs2);
+    BWTDecoding(&bwted, ofs, ofs2);
 
-    // vector<size_t> v;
+    // // vector<size_t> v;
+    // string v;
+    // string banan = "BAAANNA";
+    // banan = STX + banan + ETX;
 
-    // MTFEncoding(banana, v);
-    // for(auto i : v) {
-    //     cout << i << " ";
-    // }
-    // cout << endl;
+    // cout << "bana: " << banan << std::endl;
+
+    // MTFEncoding(banan, v, alphabet);
+    // cout << v << endl;
 
     // string mtf_dec = "";
-    // MTFDecoding(v, mtf_dec);
+    // MTFDecoding(v, mtf_dec, alphabet);
     // std::cout << "decoded" << endl;
     // cout << mtf_dec << endl;
 
 
-    string a("abcd");
-    string b("aabcd");
-    string c("abbbcd");
-    string d("aaaaaaabccccccd");
-    string e("aaaaaaabccccccdddddd");
+    // string a = banan;
+    // string b("aabcd");
+    // string c("abbbcda");
+    // string d("aaaaaaabccccccd");
+    // string e("aaaaaaabccccccdddddd");
 
-    string out = "";
-    string out2 = "";
+    // string out = "";
+    // string out2 = "";
 
-    RLEEncoding(a, out);
-    cout << a << ": " << out << endl;
-    RLEDecoding(out, out2);
-    cout << out2 << endl;
-    out2 = "";
-    out = "";
+    // RLEEncoding(a, out);
+    // cout << a << ": " << out << endl;
+    // RLEDecoding(out, out2);
+    // cout << out2 << endl;
+    // out2 = "";
+    // out = "";
 
-    RLEEncoding(b, out);
-    cout << b << ": " << out << endl;
-    RLEDecoding(out, out2);
-    cout << out2 << endl;
-    out2 = "";
-    out = "";
+    // RLEEncoding(b, out);
+    // cout << b << ": " << out << endl;
+    // RLEDecoding(out, out2);
+    // cout << out2 << endl;
+    // out2 = "";
+    // out = "";
 
-    RLEEncoding(c, out);
-    cout << c << ": " << out << endl;
-    RLEDecoding(out, out2);
-    cout << out2 << endl;
-    out2 = "";
-    out = "";
+    // RLEEncoding(c, out);
+    // cout << c << ": " << out << endl;
+    // RLEDecoding(out, out2);
+    // cout << out2 << endl;
+    // out2 = "";
+    // out = "";
 
-    RLEEncoding(d, out);
-    cout << d << ": " << out << endl;
-    RLEDecoding(out, out2);
-    cout << out2 << endl;
-    out2 = "";
-    out = "";
+    // RLEEncoding(d, out);
+    // cout << d << ": " << out << endl;
+    // RLEDecoding(out, out2);
+    // cout << out2 << endl;
+    // out2 = "";
+    // out = "";
 
-    RLEEncoding(e, out);
-    cout << e << ": " << out << endl;
-    RLEDecoding(out, out2);
-    cout << out2 << endl;
-    out2 = "";
-    out = "";
+    // RLEEncoding(e, out);
+    // cout << e << ": " << out << endl;
+    // RLEDecoding(out, out2);
+    // cout << out2 << endl;
+    // out2 = "";
+    // out = "";
 
 
 
