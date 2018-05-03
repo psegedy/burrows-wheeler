@@ -1,3 +1,8 @@
+// Author: Patrik Segedy, xseged00, <xseged00@vutbr.cz>
+// File: mtf.cpp
+// Date: 1.5.2018
+// Description: Move to front transform
+
 #include "mtf.h"
 
 int MTFEncoding(std::string &str, std::string &mtf_enc, std::list<char> alphabet) {

@@ -1,3 +1,8 @@
+// Author: Patrik Segedy, xseged00, <xseged00@vutbr.cz>
+// File: rle.cpp
+// Date: 2.5.2018
+// Description: Run length encoding
+
 #include "rle.h"
 
 int RLEEncoding(std::string &str_in, std::string &str_out) {
@@ -54,7 +59,7 @@ int RLEDecoding(std::string &str_in, std::string &str_out) {
 
     char c;
     // for(auto& c : str_in) {
-    for (int i = 0; i < str_in.size(); i++) {
+    for (size_t i = 0; i < str_in.size(); i++) {
         c = str_in[i];
         if (flag == 2) {
             // bad delimiter, go back and write it to output
@@ -72,7 +77,7 @@ int RLEDecoding(std::string &str_in, std::string &str_out) {
         }
         if (flag) {
             if (digit == "" && not std::isdigit(c)) {
-                std::cerr << "Bad delimiter found - go back, i = " << i << std::endl;
+                // Bad delimiter found - go back
                 i -= 2;
                 flag = 2;
                 continue;
@@ -84,8 +89,6 @@ int RLEDecoding(std::string &str_in, std::string &str_out) {
         }
         // print character n times
         else {
-            std::cout << "Digit: " << digit << std::endl;
-            std::cout << "Actual: " << c << std::endl;
             n = std::stoul(digit);
             for (size_t i = 0; i < n; i++)
                 str_out += c;

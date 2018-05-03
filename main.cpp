@@ -3,121 +3,123 @@
 // Date: 29.4.2018
 // Description: Burrows-Wheeler Transformation application
 //              BWT -> MTF -> RLE-0 -> Entropy coder
+
+#include "main.h"
 #include "bwted.h"
 #include "mtf.h"
 #include "rle.h"
 
 using namespace std;
 
+int main(int argc, char **argv) {
 
-int main(int argc, char const **argv) {
-    fstream ifs("test/test.txt", istream::in|ios::ate);
-    fstream banana("test_in.txt", istream::in);
-    fstream test5k("test_5k.txt", istream::in);
-    fstream test_start("test_start.txt", istream::in);
-    fstream test_1ch("test_1ch.txt", istream::in);
-    fstream test30k("test_30k.txt", istream::in);
-    fstream test100k("test_100k.txt", istream::in);
-    fstream ofs("test_out.txt", ios::out|ios::in|ios::trunc);
-    fstream ofs2("test_out2.txt", ostream::out);
+    params p;
     tBWTED bwted;
 
-    // string buff("", 5);
-    // banana.seekg(0, banana.end);
-    // cout << banana.tellg() << std::endl;
-    // banana.seekg(0, banana.beg);
-    // banana.read(&buff.front(), 5);
-    // cout << buff << endl;
-    // banana.seekg(5, banana.beg);
-    // cout << banana.tellg() << std::endl;
-    // banana.read(&buff.front(), 5);
-    // cout << buff << endl;
-    // // cout << buff << endl;
-    // return 1;
+    int rc;
+    // get program arguments
+    if ((rc = get_args(argc, argv, &p)) != 2)
+        return rc;
 
-    // std::list<char> alphabet;
-    // // initialize alphabet
-    // for (int i = 0; i < 255; ++i)
-    //     alphabet.push_front(char(i));
+    // input output
+    ifstream ifs(p.infile);
+    ofstream ofs(p.outfile);
+    // default to stdin, stdout
+    istream fin(cin.rdbuf());
+    ostream fout(cout.rdbuf());
 
-    BWTEncoding(&bwted, test_1ch, ofs);
-    cout << "Uncompressed: " << bwted.uncodedSize << endl;
-    cout << "Compressed: " << ofs.tellg() << endl;
-    cout << "Compressed bwt: " << bwted.codedSize << endl; 
+    // use input file if -i argument exists
+    // else use stdin
+    if(ifs)
+        fin.rdbuf(ifs.rdbuf());
 
+    // use output file if -o argument exists
+    // else use stdout
+    if(ofs)
+        fout.rdbuf(ofs.rdbuf());
 
+    // compression
+    if (p.compress) {
+        BWTEncoding(&bwted, fin, fout);
+        bwted.codedSize = ofs.tellp();
+    }
 
-    ofs.seekg (0, ofs.beg);
+    // decompression
+    if (p.decompress) {
+        BWTDecoding(&bwted, fin, fout);
+        bwted.uncodedSize = ofs.tellp();
+    }
 
-    BWTDecoding(&bwted, ofs, ofs2);
-
-    // // vector<size_t> v;
-    // string v;
-    // string banan = "BAAANNA";
-    // banan = STX + banan + ETX;
-
-    // cout << "bana: " << banan << std::endl;
-
-    // MTFEncoding(banan, v, alphabet);
-    // cout << v << endl;
-
-    // string mtf_dec = "";
-    // MTFDecoding(v, mtf_dec, alphabet);
-    // std::cout << "decoded" << endl;
-    // cout << mtf_dec << endl;
-
-
-    // string a = banan;
-    // string b("aabcd");
-    // string c("abbbcda");
-    // string d("aaaaaaabccccccd");
-    // string e("aaaaaaabccccccdddddd");
-
-    // string out = "";
-    // string out2 = "";
-
-    // RLEEncoding(a, out);
-    // cout << a << ": " << out << endl;
-    // RLEDecoding(out, out2);
-    // cout << out2 << endl;
-    // out2 = "";
-    // out = "";
-
-    // RLEEncoding(b, out);
-    // cout << b << ": " << out << endl;
-    // RLEDecoding(out, out2);
-    // cout << out2 << endl;
-    // out2 = "";
-    // out = "";
-
-    // RLEEncoding(c, out);
-    // cout << c << ": " << out << endl;
-    // RLEDecoding(out, out2);
-    // cout << out2 << endl;
-    // out2 = "";
-    // out = "";
-
-    // RLEEncoding(d, out);
-    // cout << d << ": " << out << endl;
-    // RLEDecoding(out, out2);
-    // cout << out2 << endl;
-    // out2 = "";
-    // out = "";
-
-    // RLEEncoding(e, out);
-    // cout << e << ": " << out << endl;
-    // RLEDecoding(out, out2);
-    // cout << out2 << endl;
-    // out2 = "";
-    // out = "";
-
-
-
-
+    // log info
+    if (p.logfile != "") {
+        ofstream log(p.logfile);
+        log << "login = xseged00" << endl;
+        log << "uncodedSize = " << bwted.uncodedSize << endl;
+        log << "codedSize = " << bwted.codedSize << endl;
+        log.close();
+    }
 
     ifs.close();
     ofs.close();
-    ofs2.close();
 
     return 0;
+}
+
+int get_args(int argc, char **argv, params *p) {
+    int index;
+    int c;
+
+    p->infile = "";
+    p->outfile = "";
+    p->logfile = "";
+    p->compress = false;
+    p->decompress = false;
+
+    while ((c = getopt (argc, argv, "i:o:l:cxh")) != -1)
+        switch (c) {
+            case 'i':
+                p->infile = optarg;
+                break;
+            case 'o':
+                p->outfile = optarg;
+                break;
+            case 'l':
+                p->logfile = optarg;
+                break;
+            case 'c':
+                p->compress = true;
+                break;
+            case 'x':
+                p->decompress = true;
+                break;
+            case 'h':
+                usage();
+                return 0;
+            case '?':
+                cerr << "Bad program arguments" << endl;
+                usage();
+                return 1;
+            default:
+                abort();
+        }
+
+    for (index = optind; index < argc; index++) {
+        cerr << "Non-option argument" << argv[index] << endl;
+        usage();
+        return 1;
+    }
+
+    return 2;
+}
+
+void usage() {
+    cout << "Usage:" << endl
+         << "./bwted -i infile -o outfile -l logfile -c" << endl << endl
+         << "Parameters" << endl
+         << "\t-i <infile>                  Input file - if empty read stdin" << endl
+         << "\t-o <outfile>                 Output file - if empty print to stdout " << endl
+         << "\t-l <logfile>                 Log file filename" << endl
+         << "\t-c                           Compress" << endl
+         << "\t-x                           Decompress" << endl
+         << "\t-h                           Print this help" << endl;
 }
