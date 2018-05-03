@@ -6,8 +6,6 @@
 
 #include "main.h"
 #include "bwted.h"
-#include "mtf.h"
-#include "rle.h"
 
 using namespace std;
 
