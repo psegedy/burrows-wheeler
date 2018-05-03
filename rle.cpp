@@ -52,7 +52,16 @@ int RLEDecoding(std::string &str_in, std::string &str_out) {
     std::string digit = "";
     size_t n;
 
-    for(auto& c : str_in) {
+    char c;
+    // for(auto& c : str_in) {
+    for (int i = 0; i < str_in.size(); i++) {
+        c = str_in[i];
+        if (flag == 2) {
+            // bad delimiter, go back and write it to output
+            str_out += c;
+            flag = 0;
+            continue;
+        }
         if (flag == 0) {
             // if format is compressed
             if (c == DELIM)
@@ -61,12 +70,22 @@ int RLEDecoding(std::string &str_in, std::string &str_out) {
                 str_out += c;
             continue;
         }
+        if (flag) {
+            if (digit == "" && not std::isdigit(c)) {
+                std::cerr << "Bad delimiter found - go back, i = " << i << std::endl;
+                i -= 2;
+                flag = 2;
+                continue;
+            }
+        }
         // get n from compressed format
         if (flag && std::isdigit(c)) {
             digit += c;
         }
         // print character n times
         else {
+            std::cout << "Digit: " << digit << std::endl;
+            std::cout << "Actual: " << c << std::endl;
             n = std::stoul(digit);
             for (size_t i = 0; i < n; i++)
                 str_out += c;

@@ -31,72 +31,101 @@ int BWTDecoding(tBWTED *ahed, std::fstream &inputFile, std::fstream &outputFile)
     for (int i = 0; i < 255; ++i)
         alphabet.push_front(char(i));
 
-    // read stream to string
-    std::string str((std::istreambuf_iterator<char>(inputFile)),
-                     std::istreambuf_iterator<char>());
+    inputFile.seekg(0, inputFile.end);
+    size_t filesize = inputFile.tellg();
+    ahed->codedSize = filesize;
+    inputFile.seekg(0, inputFile.beg);
 
-    std::cout << "infile: " << str << std::endl;
-    std::string out = "";
+    size_t bufsize = CHUNK_SIZE;
+
+    while(filesize > 0) {
+        if (filesize < CHUNK_SIZE) {
+            bufsize = filesize;
+        }
+        filesize -= bufsize;
+
+        std::string str("", bufsize);
+        inputFile.read(&str.front(), bufsize);
+        // std::cout << "First 10 chars: " << str.substr(0, 10) << std::endl;
+
+        // // read stream to string
+        // std::string str((std::istreambuf_iterator<char>(inputFile)),
+        //                  std::istreambuf_iterator<char>());
+
+        // std::cout << "infile: " << str << std::endl;
+        std::string out = "";
 
 
-    std::string rle_dec = "";
-    RLEDecoding(str, rle_dec);
-    std::cout << "rle dec: " << rle_dec << std::endl;
-    std::cout << "rle dec size: " << rle_dec.size() << std::endl;
-    str = "";
-    MTFDecoding(rle_dec, str, alphabet);
-    std::cout << "mtf dec: " << str << std::endl;
-    std::cout << "mtf dec size: " << str.size() << std::endl;
-    
-    std::vector<char> column(str.begin(), str.end());
-    std::vector<char> column_sorted(str.begin(), str.end());
-    std::stable_sort(column_sorted.begin(), column_sorted.end());
+        std::string rle_dec = "";
+        RLEDecoding(str, rle_dec);
+        // std::cout << "rle dec: " << rle_dec << std::endl;
+        // std::cout << "rle dec size: " << rle_dec.size() << std::endl;
+        std::cout << "[DONE] RLE decoding" << std::endl;
+        str = "";
+        MTFDecoding(rle_dec, str, alphabet);
+        std::cout << "[DONE] MTF decoding" << std::endl;
+        // std::cout << "mtf dec: " << str << std::endl;
+        // std::cout << "mtf dec size: " << str.size() << std::endl;
+        
+        std::vector<char> column(str.begin(), str.end());
+        std::vector<char> column_sorted(str.begin(), str.end());
+        std::stable_sort(column_sorted.begin(), column_sorted.end());
 
-    matrix_t table;
-    table.resize(str.size(), std::vector<char>(str.size()));
+        std::cout << "Init matrix_t table" << std::endl;
+        matrix_t table;
+        table.resize(str.size(), std::vector<char>(str.size()));
 
-    int i = str.size() - 1;
-    table[i] = column_sorted;
-    table = transpose(table);
-    std::stable_sort(table.begin(), table.end(), [i](const std::vector< char >& a, const std::vector< char >& b){ return a[i] < b[i]; } );
-
-    for (int i = str.size() - 2; i >= 0; i--) {
+        int i = str.size() - 1;
+        table[i] = column_sorted;
         table = transpose(table);
-        table[i] = column;
-        table = transpose(table);
-        // https://stackoverflow.com/questions/14669533/sort-multidimensional-vector-of-ints
         std::stable_sort(table.begin(), table.end(), [i](const std::vector< char >& a, const std::vector< char >& b){ return a[i] < b[i]; } );
-    }
 
-    std::cout << "print table" << std::endl;
-    for(auto i : table) {
-        for(auto j : i) {
-            std::cout << j << " ";
+        std::cout << "[DONE] 1st transpose & stable sort" << std::endl;
+        for (int i = str.size() - 2; i >= 0; i--) {
+            table = transpose(table);
+            table[i] = column;
+            table = transpose(table);
+            // https://stackoverflow.com/questions/14669533/sort-multidimensional-vector-of-ints
+            std::stable_sort(table.begin(), table.end(), [i](const std::vector< char >& a, const std::vector< char >& b){ return a[i] < b[i]; } );
+            if (i % 300 == 0)
+                std::cout << "[DONE] " << i << ". transpose & stable sort" << std::endl;
         }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
 
-    // find row with last character == ETX
-    for(auto i : table) {
-        if (i.back() == ETX) {
-            out = std::string(i.begin(), i.end());
-            break;
+        // std::cout << "print table" << std::endl;
+        // for(auto i : table) {
+        //     for(auto j : i) {
+        //         std::cout << j << " ";
+        //     }
+        //     std::cout << std::endl;
+        // }
+        // std::cout << std::endl;
+
+        // find row with last character == ETX
+        for(auto i : table) {
+            if (i.back() == ETX) {
+                std::cout << "ETX at the end found" << std::endl;
+                out = std::string(i.begin(), i.end());
+                break;
+            }
         }
-    }
-    // delete STX, ETX
-    out = out.substr(1, out.size() - 2);
+        // delete STX, ETX
+        outputFile << out;
 
-    std::cout << "Decoded" << std::endl;
-    std::cout << out << std::endl;
-    for (auto i : out) {
-        std::cout << std::hex << int(i) << " ";
+        // out = out.substr(1, out.size() - 2);
+
+        std::cout << "Decoded" << std::endl;
+        // std::cout << out << std::endl;
+        // for (auto i : out) {
+        //     std::cout << std::hex << int(i) << " ";
+        // }
+        // std::cout << std::dec << std::endl;
+        
+
+        // outputFile << out;
+
     }
-    std::cout << std::dec << std::endl;
+
     
-
-    outputFile << out;
-
     return 0;
 }
 
@@ -113,67 +142,94 @@ int BWTEncoding(tBWTED *bwted, std::fstream &inputFile, std::fstream &outputFile
         alphabet.push_front(char(i));
 
     std::vector<std::string> cyclic;
-    // read stream to string
-    std::string str((std::istreambuf_iterator<char>(inputFile)),
-                     std::istreambuf_iterator<char>());
-    
-    // add start and end of transaction symbols to string
-    str = STX + str + ETX;
-    // std::cout << "String w/ STX, ETX: " << str << std::endl;
+
+    inputFile.seekg(0, inputFile.end);
+    size_t filesize = inputFile.tellg();
+    bwted->uncodedSize = filesize;
+    inputFile.seekg(0, inputFile.beg);
+
+    size_t bufsize = CHUNK_SIZE;
+
+    while(filesize > 0) {
+        if (filesize < CHUNK_SIZE) {
+            bufsize = filesize;
+        }
+        filesize -= bufsize;
+
+        std::string str("", bufsize);
+        inputFile.read(&str.front(), bufsize);
+        // std::cout << "First 10 chars: " << str.substr(0, 10) << std::endl;
+
+        // read stream to string
+        // std::string str((std::istreambuf_iterator<char>(inputFile)),
+        //                  std::istreambuf_iterator<char>());
+        
+        // add start and end of transaction symbols to string
+        str = STX + str + ETX;
+        // std::cout << "String w/ STX, ETX: " << str << std::endl;
 
 
-    std::cout << "Cyclic shifts" << std::endl;
-    // create cyclic shifts
-    std::string shifted;
-    for (size_t i = 0; i < str.size(); i++) {
-        shifted = str.substr(i, std::string::npos) + str.substr(0, i);
-        cyclic.push_back(shifted);
+        std::cout << "Cyclic shifts" << std::endl;
+        // create cyclic shifts
+        std::string shifted;
+        for (size_t i = 0; i < str.size(); i++) {
+            shifted = str.substr(i, std::string::npos) + str.substr(0, i);
+            cyclic.push_back(shifted);
+        }
+        shifted.clear();
+        str.clear();
+
+        std::cout << "Unsorted" << std::endl;
+        // for(auto i : cyclic) {
+        //     std::cout << i << std::endl;
+        // }
+        // std::cout << std::endl;
+
+
+        // sort cyclic shifts lexicographicaly
+        std::sort(cyclic.begin(), cyclic.end());
+
+        std::cout << "Sorted" << std::endl;
+        // for(auto i : cyclic) {
+        //     std::cout << i << std::endl;
+        // }
+        // std::cout << std::endl;
+
+        // get last column
+        std::string out = "";
+        for(auto i : cyclic) {
+            // outputFile << i.back();
+            out += i.back();
+        }
+        cyclic.clear();
+
+        std::cout << "Encoded" << std::endl;
+        // std::cout << out << std::endl;
+        // for (auto i : out) {
+        //     std::cout << std::hex << int(i) << " ";
+        // }
+        // std::cout << std::dec << std::endl;
+        // std::cout << out << std::endl;
+
+        // add symbol after BWT
+        out += '\x04';
+
+        std::string mtf_enc = "";
+
+        MTFEncoding(out, mtf_enc, alphabet);
+        // std::cout << "mtf enc: " << mtf_enc << std::endl;
+        // std::cout << "mtf enc size: " << mtf_enc.size() << std::endl;
+        out = "";
+        RLEEncoding(mtf_enc, out);
+        // std::cout << "rle enc: " << out << std::endl;
+        // std::cout << "rle enc size: " << out.size() << std::endl;
+
+
+        bwted->codedSize = out.size();
+        outputFile << out;
+
+        out.clear();
     }
-
-    std::cout << "Unsorted" << std::endl;
-    // for(auto i : cyclic) {
-    //     std::cout << i << std::endl;
-    // }
-    // std::cout << std::endl;
-
-
-    // sort cyclic shifts lexicographicaly
-    std::sort(cyclic.begin(), cyclic.end());
-
-    std::cout << "Sorted" << std::endl;
-    // for(auto i : cyclic) {
-    //     std::cout << i << std::endl;
-    // }
-    // std::cout << std::endl;
-
-    // get last column
-    std::string out = "";
-    for(auto i : cyclic) {
-        // outputFile << i.back();
-        out += i.back();
-    }
-    bwted->codedSize = out.size();
-
-    std::cout << "Encoded" << std::endl;
-    // std::cout << out << std::endl;
-    // for (auto i : out) {
-    //     std::cout << std::hex << int(i) << " ";
-    // }
-    // std::cout << std::dec << std::endl;
-    std::cout << out << std::endl;
-
-    std::string mtf_enc = "";
-
-    MTFEncoding(out, mtf_enc, alphabet);
-    std::cout << "mtf enc: " << mtf_enc << std::endl;
-    std::cout << "mtf enc size: " << mtf_enc.size() << std::endl;
-    out = "";
-    RLEEncoding(mtf_enc, out);
-    std::cout << "rle enc: " << out << std::endl;
-    std::cout << "rle enc size: " << out.size() << std::endl;
-
-
-    outputFile << out;
 
     return 0;
 }

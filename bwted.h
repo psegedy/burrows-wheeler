@@ -17,6 +17,7 @@
 
 #define STX '\x02'  // start of transaction
 #define ETX '\x03'  // end of transaction
+#define CHUNK_SIZE 200
 // #define STX '^'  // start of transaction
 // #define ETX '|'  // end of transaction
 

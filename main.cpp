@@ -11,21 +11,39 @@ using namespace std;
 
 
 int main(int argc, char const **argv) {
-    fstream ifs("test/test.txt", istream::in);
+    fstream ifs("test/test.txt", istream::in|ios::ate);
     fstream banana("test_in.txt", istream::in);
     fstream test5k("test_5k.txt", istream::in);
+    fstream test_start("test_start.txt", istream::in);
+    fstream test_1ch("test_1ch.txt", istream::in);
     fstream test30k("test_30k.txt", istream::in);
     fstream test100k("test_100k.txt", istream::in);
-    fstream ofs("test_out.txt", ios_base::out|ios_base::in|ios_base::trunc);
+    fstream ofs("test_out.txt", ios::out|ios::in|ios::trunc);
     fstream ofs2("test_out2.txt", ostream::out);
     tBWTED bwted;
 
-    std::list<char> alphabet;
-    // initialize alphabet
-    for (int i = 0; i < 255; ++i)
-        alphabet.push_front(char(i));
+    // string buff("", 5);
+    // banana.seekg(0, banana.end);
+    // cout << banana.tellg() << std::endl;
+    // banana.seekg(0, banana.beg);
+    // banana.read(&buff.front(), 5);
+    // cout << buff << endl;
+    // banana.seekg(5, banana.beg);
+    // cout << banana.tellg() << std::endl;
+    // banana.read(&buff.front(), 5);
+    // cout << buff << endl;
+    // // cout << buff << endl;
+    // return 1;
 
-    BWTEncoding(&bwted, banana, ofs);
+    // std::list<char> alphabet;
+    // // initialize alphabet
+    // for (int i = 0; i < 255; ++i)
+    //     alphabet.push_front(char(i));
+
+    BWTEncoding(&bwted, test_1ch, ofs);
+    cout << "Uncompressed: " << bwted.uncodedSize << endl;
+    cout << "Compressed: " << ofs.tellg() << endl;
+    cout << "Compressed bwt: " << bwted.codedSize << endl; 
 
 
 

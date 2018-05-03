@@ -2,6 +2,8 @@
 #define __RLE_H_
 
 #include <string>
+#include <iostream>
+
 
 #define DELIM '\x04'
 // #define DELIM '@'
